@@ -1,45 +1,135 @@
 
-import { useState } from 'react';
-import './App.css';
-import TodoInput from './components/TodoInput';
-import TodoList from './components/TodoList';
+
+import { useState } from "react";
+import "./App.css";
+import TodoItem from "./components/TodoItem";
 
 function App() {
-  const [todos, setTodos] = useState([]);
-  const [input, setInput] = useState('');
+  const [tasks, setTasks] = useState([
+    {
+      id: 1,
+      titre: "Acheter à manger",
+      description:
+        "Acheter des fruits et légumes à Carrefour avec une bonne qualité",
+      categorie: "course",
+      dateDebut: "2025-09-10",
+      dateFin: "2025-09-12",
+      statut: "à faire",
+    },
+    {
+      id: 2,
+      titre: "Révision examen React",
+      description: "Relire le cours et faire des petits projets pratiques",
+      categorie: "education",
+      dateDebut: "2025-09-11",
+      dateFin: "2025-09-15",
+      statut: "en cours",
+    },
+  ]);
 
-  const handleAdd = () => {
-    if (input.trim() === '') return;
-    setTodos([
-      ...todos,
-      { id: Date.now(), text: input }
-    ]);
-    setInput('');
-  };
+
+  // État pour la modal d'ajout
+  const [showModal, setShowModal] = useState(false);
+  // État pour le formulaire
+  const [form, setForm] = useState({
+    titre: '',
+    description: '',
+    categorie: '',
+    dateDebut: '',
+    dateFin: '',
+    statut: 'à faire',
+  });
 
   const handleDelete = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+    setTasks(tasks.filter((task) => task.id !== id));
+  };
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.titre || !form.description || !form.categorie || !form.dateDebut || !form.dateFin) return;
+    setTasks([
+      ...tasks,
+      {
+        ...form,
+        id: Date.now(),
+      },
+    ]);
+    setForm({ titre: '', description: '', categorie: '', dateDebut: '', dateFin: '', statut: 'à faire' });
+    setShowModal(false);
   };
 
   return (
-    <div className='bg-gray-50 min-h-screen w-full flex flex-col justify-center mx-auto items-center'>
-      <h1 className='text-4xl font-bold p-4'>Gestion des taches </h1>
-      {/* <TodoInput
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        onAdd={handleAdd}
-      />
-      <TodoList todos={todos} onDelete={handleDelete} /> */}
-      <div className="flex flex-col items-center justify-center  bg-white border border-gray-300 rounded-lg m-4 p-4">
-<div className="flex flex-col gap-4 w-full">
-      <h1 className='text-xl font-semiBold'>Tâches 1: Acheter a manger</h1>
-      <h3> <span className='font-bold text-blue-500'>Description:</span> Acheter des fruits et légumes a Carrefour avec une bonne qualité</h3>
-      </div>
-      <div className="flex gap-2 mt-4 justify-start w-full">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Modifier</button>
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Supprimer</button>
-      </div>
-      </div>
+    <div className="p-6 mx-auto flex flex-col justify-center items-center">
+      <h1 className="text-4xl font-bold mb-6">Gestion des tâches</h1>
+
+      {/* Modal d'ajout de tâche */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col gap-4 relative">
+            <button className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-2xl" onClick={() => setShowModal(false)}>&times;</button>
+            <h2 className="text-xl font-bold mb-2">Créer une tâche</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <input type="text" name="titre" value={form.titre} onChange={handleChange} placeholder="Titre" className="border p-2 rounded" required />
+              <textarea name="description" value={form.description} onChange={handleChange} placeholder="Description" className="border p-2 rounded" required />
+              <select name="categorie" value={form.categorie} onChange={handleChange} className="border p-2 rounded" required>
+                <option value="">Catégorie</option>
+                <option value="education">Éducation</option>
+                <option value="sport">Sport</option>
+                <option value="course">Course</option>
+                <option value="autre">Autre</option>
+              </select>
+              <div className="flex gap-2">
+                <input type="date" name="dateDebut" value={form.dateDebut} onChange={handleChange} className="border p-2 rounded w-1/2" required />
+                <input type="date" name="dateFin" value={form.dateFin} onChange={handleChange} className="border p-2 rounded w-1/2" required />
+              </div>
+              <select name="statut" value={form.statut} onChange={handleChange} className="border p-2 rounded">
+                <option value="à faire">À faire</option>
+                <option value="en cours">En cours</option>
+                <option value="terminé">Terminé</option>
+              </select>
+              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Ajouter</button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {tasks.length === 0 ? (
+        <div className="flex flex-col items-center justify-center text-center p-6 border rounded-lg shadow-md bg-gray-50">
+          <img
+            src="https://img.freepik.com/premium-vector/illustration-task_498740-14038.jpg"
+            alt="empty"
+            className="w-64 h-64 mb-4"
+          />
+          <p className="text-lg font-semibold mb-2">Aucune tâche disponible</p>
+          <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => setShowModal(true)}>
+            Créer tâche
+          </button>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          <div className=" flex space-x-10 items-center mb-4">
+            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" onClick={() => setShowModal(true)}>
+              Créer tâche
+            </button>
+            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+              A faire 
+            </button>
+            <button className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+              En cours
+            </button>
+            <button className="bg-green-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+              terminé
+            </button>
+          </div>
+          {tasks.map((task) => (
+            <TodoItem key={task.id} task={task} onDelete={handleDelete} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
