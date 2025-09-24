@@ -125,9 +125,24 @@ function App() {
               terminé
             </button>
           </div>
-          {tasks.map((task) => (
+          {/* {tasks.map((task) => (
             <TodoItem key={task.id} task={task} onDelete={handleDelete} />
-          ))}
+          ))} */}
+         {tasks.map((task) => (
+  <TodoItem
+    key={task.id}
+    task={task}
+    onDelete={handleDelete}
+    onEdit={(updatedTask) => {
+      setTasks(tasks.map(t => t.id === updatedTask.id ? updatedTask : t));
+    }}
+    onUpdateStatus={(id, newStatus) => {
+      setTasks(tasks.map(t => t.id === id ? { ...t, statut: newStatus } : t));
+    }}
+  />
+))}
+
+
         </div>
       )}
     </div>
