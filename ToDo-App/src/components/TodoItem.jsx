@@ -1,49 +1,48 @@
-import React, { useState } from 'react';
+import React from "react";
 
 function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
-  const [showPopup, setShowPopup] = useState(false);
-
-  const [editedTask, setEditedTask] = useState({ ...task });
-
-  const handleEditClick = () => {
-    setEditedTask({ ...task }); 
-    setShowPopup(true);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditedTask((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSave = () => {
-    onEdit(editedTask);
-    setShowPopup(false);
-  };
-
-  const handleStatusChange = (e) => {
-    onUpdateStatus(task.id, e.target.value);
-  };
-
   return (
     <div className="flex flex-col bg-white border border-gray-300 rounded-lg p-4 shadow-sm mb-2">
       <h2 className="text-xl font-semibold">{task.titre}</h2>
       <p>
-        <span className="font-bold text-blue-500">Description:</span> {task.description}
+        <span className="font-bold text-blue-500">Description:</span>{" "}
+        {task.description}
       </p>
       <p>
-        <span className="font-bold">Catégorie:</span> <span className={task.categorie === "education" ? "text-blue-500" : "text-green-500"}> {task.categorie} </span>
+        <span className="font-bold">Catégorie:</span>{" "}
+        <span
+          className={
+            task.categorie === "education"
+              ? "text-blue-500"
+              : "text-green-500"
+          }
+        >
+          {task.categorie}
+        </span>
       </p>
-      <p> 
+      <p>
         <span className="font-bold">Début:</span> {task.dateDebut}
       </p>
       <p>
         <span className="font-bold">Fin:</span> {task.dateFin}
       </p>
       <p>
-        <span className="font-bold">Statut:</span> {task.statut}
+        <span className="font-bold">Statut:</span>{" "}
+        <select
+          value={task.statut}
+          onChange={(e) => onUpdateStatus(task.id, e.target.value)}
+          className="border p-1 rounded"
+        >
+          <option value="à faire">À faire</option>
+          <option value="en cours">En cours</option>
+          <option value="terminé">Terminé</option>
+        </select>
       </p>
       <div className="flex gap-2 mt-4">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          onClick={() => onEdit(task)}
+        >
           Modifier
         </button>
         <button
