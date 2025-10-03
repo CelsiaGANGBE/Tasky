@@ -37,7 +37,7 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
         </span>
       </p>
       <p>
-        <span className="font-bold">Début:</span> {task.dateDebut}
+        <span className="font-bold">Debut:</span> {task.dateDebut}
       </p>
       <p>
         <span className="font-bold">Fin:</span> {task.dateFin}
@@ -49,10 +49,11 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
           onChange={handleStatusChange}
           className="border border-gray-300 rounded p-1"
         >
-          <option value="en cours">A faire</option>
+          {/* Afficher "à faire" seulement si le statut actuel est "à faire" */}
+          {task.statut === "à faire" && <option value="à faire">À faire</option>}
           <option value="en cours">En cours</option>
           <option value="terminé">Terminé</option>
-          <option value="en attente">En attente</option>
+          <option value="abandonné">Abandonné</option>
         </select>
       </p>
 
@@ -120,10 +121,11 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
                 value={editedTask.statut}
                 onChange={handleChange}
                 className="border p-2 rounded"
-              >
+              > 
+                <option value="à faire">À faire</option>
                 <option value="en cours">En cours</option>
                 <option value="terminé">Terminé</option>
-                <option value="en attente">En attente</option>
+                <option value="abandonné">Abandonné</option>
               </select>
             </form>
 
