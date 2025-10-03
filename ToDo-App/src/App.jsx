@@ -56,6 +56,7 @@ function App() {
       {
         ...form,
         id: Date.now(),
+        statut: 'à faire',
       },
     ]);
     setForm({ titre: '', description: '', categorie: '', dateDebut: '', dateFin: '', statut: 'à faire' });
@@ -86,11 +87,7 @@ function App() {
                 <input type="date" name="dateDebut" value={form.dateDebut} onChange={handleChange} className="border p-2 rounded w-1/2" required />
                 <input type="date" name="dateFin" value={form.dateFin} onChange={handleChange} className="border p-2 rounded w-1/2" required />
               </div>
-              <select name="statut" value={form.statut} onChange={handleChange} className="border p-2 rounded">
-                <option value="à faire">À faire</option>
-                <option value="en cours">En cours</option>
-                <option value="terminé">Terminé</option>
-              </select>
+              {/* PLUS DE CHAMP STATUT ICI */}
               <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Ajouter</button>
             </form>
           </div>

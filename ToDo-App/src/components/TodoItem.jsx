@@ -49,6 +49,7 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
           onChange={handleStatusChange}
           className="border border-gray-300 rounded p-1"
         >
+          <option value="en cours">A faire</option>
           <option value="en cours">En cours</option>
           <option value="terminé">Terminé</option>
           <option value="en attente">En attente</option>
