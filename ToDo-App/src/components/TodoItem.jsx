@@ -2,6 +2,11 @@ import React from "react";
 
 function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
   // Définir la couleur du border-l selon la catégorie
+  
+  const handleStatusChange = (e) => {
+    onUpdateStatus(task.id, e.target.value);
+  };
+  
   const categoryBorder =
     task.categorie === "education"
       ? "border-l-4 border-blue-500"
