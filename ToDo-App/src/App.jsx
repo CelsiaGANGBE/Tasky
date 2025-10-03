@@ -104,6 +104,7 @@ function App() {
       {
         ...form,
         id: Date.now(),
+        statut: 'à faire',
       },
     ]);
     setForm({
@@ -277,22 +278,8 @@ function App() {
                   required
                 />
               </div>
-              <select
-                name="statut"
-                value={form.statut}
-                onChange={handleChange}
-                className="border p-2 rounded"
-              >
-                <option value="à faire">À faire</option>
-                <option value="en cours">En cours</option>
-                <option value="terminé">Terminé</option>
-              </select>
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2"
-              >
-                Ajouter
-              </button>
+              {/* PLUS DE CHAMP STATUT ICI */}
+              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Ajouter</button>
             </form>
           </div>
         </div>
@@ -434,7 +421,5 @@ function App() {
     </div>
   );
 }
-
-
 
 export default App;

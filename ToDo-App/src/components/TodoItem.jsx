@@ -44,8 +44,19 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
         <span className="font-bold">Fin:</span>{" "}
         {new Date(task.dateFin).toLocaleString()}
       </p>
-      <p className="text-gray-700">
-        <span className="font-bold">Statut:</span> {task.statut}
+      <p>
+        <span className="font-bold">Statut:</span>{' '}
+        <select
+          value={task.statut}
+          onChange={handleStatusChange}
+          className="border border-gray-300 rounded p-1"
+        >
+          {/* Afficher "à faire" seulement si le statut actuel est "à faire" */}
+          {task.statut === "à faire" && <option value="à faire">À faire</option>}
+          <option value="en cours">En cours</option>
+          <option value="terminé">Terminé</option>
+          <option value="abandonné">Abandonné</option>
+        </select>
       </p>
       <div className="flex gap-2 mt-4">
         <button
