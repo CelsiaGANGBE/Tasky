@@ -1,45 +1,317 @@
-
-import { useState } from 'react';
-import './App.css';
-import TodoInput from './components/TodoInput';
-import TodoList from './components/TodoList';
+import { useState, useEffect, useRef } from "react";
+import "./App.css";
+import TodoItem from "./components/TodoItem";
 
 function App() {
-  const [todos, setTodos] = useState([]);
-  const [input, setInput] = useState('');
+  const [tasks, setTasks] = useState([
+    {
+      id: 1,
+      titre: "Acheter à manger",
+      description:
+        "Acheter des fruits et légumes à Carrefour avec une bonne qualité",
+      categorie: "course",
+      dateDebut: "2025-09-10T09:00",
+      dateFin: "2025-09-12T18:00",
+      statut: "à faire",
+    },
+    {
+      id: 2,
+      titre: "Révision examen React",
+      description: "Relire le cours et faire des petits projets pratiques",
+      categorie: "education",
+      dateDebut: "2025-09-11T10:00",
+      dateFin: "2025-09-15T20:00",
+      statut: "en cours",
+    },
+    {
+      id: 3,
+      titre: "Tester le rappel",
+      description: "Cette tâche doit déclencher un rappel rapidement",
+      categorie: "test",
+      dateDebut: new Date().toISOString(),
+      dateFin: new Date(Date.now() + 60 * 1000).toISOString(), // échéance dans 1 min
+      statut: "à faire",
+    },
+  ]);
 
-  const handleAdd = () => {
-    if (input.trim() === '') return;
-    setTodos([
-      ...todos,
-      { id: Date.now(), text: input }
+  const [reminder, setReminder] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({
+    titre: "",
+    description: "",
+    categorie: "",
+    dateDebut: "",
+    dateFin: "",
+    statut: "à faire",
+  });
+
+  // Ajout de l'état pour le filtre
+  const [filter, setFilter] = useState("all");
+
+  const reminderTimeout = useRef(null);
+
+  // Effet pour gérer les rappels automatiques
+  useEffect(() => {
+    if (reminderTimeout.current) clearTimeout(reminderTimeout.current);
+    if (reminder) return;
+
+    const now = new Date();
+    let nextTask = null;
+    let nextIndex = -1;
+    let minDiff = Infinity;
+
+    tasks.forEach((task, idx) => {
+      if (!task.dateFin) return;
+      const dateFin = new Date(task.dateFin);
+      const diff = dateFin - now;
+      if (diff > 0 && diff <= 20 * 60 * 1000 && diff < minDiff) {
+        minDiff = diff;
+        nextTask = task;
+        nextIndex = idx;
+      }
+    });
+
+    if (nextTask) {
+      reminderTimeout.current = setTimeout(() => {
+        setReminder({ task: nextTask, index: nextIndex });
+      }, 1000);
+    } else {
+      reminderTimeout.current = setTimeout(() => {}, 60000); // recheck dans 1 min
+    }
+
+    return () => {
+      if (reminderTimeout.current) clearTimeout(reminderTimeout.current);
+    };
+  }, [tasks, reminder]);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (
+      !form.titre ||
+      !form.description ||
+      !form.categorie ||
+      !form.dateDebut ||
+      !form.dateFin
+    )
+      return;
+    setTasks([
+      ...tasks,
+      {
+        ...form,
+        id: Date.now(),
+      },
     ]);
-    setInput('');
+    setForm({
+      titre: "",
+      description: "",
+      categorie: "",
+      dateDebut: "",
+      dateFin: "",
+      statut: "à faire",
+    });
+    setShowModal(false);
+  };
+
+  const handleProlong = () => {
+    if (!reminder) return;
+    setTasks((tasks) =>
+      tasks.map((t, i) =>
+        i === reminder.index ? { ...t, dateFin: getNewDateFin(t.dateFin, 20) } : t
+      )
+    );
+    setReminder(null);
+  };
+
+  const handleOkReminder = () => {
+    setReminder(null);
+  };
+
+  const getNewDateFin = (dateFin, minutes) => {
+    const d = new Date(dateFin);
+    d.setMinutes(d.getMinutes() + minutes);
+    return d.toISOString();
   };
 
   const handleDelete = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+    setTasks(tasks.filter((task) => task.id !== id));
   };
 
+  // Méthode de filtrage
+  const filteredTasks =
+    filter === "all"
+      ? tasks
+      : tasks.filter((task) => task.statut === filter);
+
   return (
-    <div className='bg-gray-50 min-h-screen w-full flex flex-col justify-center mx-auto items-center'>
-      <h1 className='text-black text-4xl font-bold p-4'>Gestion des taches </h1>
-      {/* <TodoInput
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        onAdd={handleAdd}
-      />
-      <TodoList todos={todos} onDelete={handleDelete} /> */}
-      <div className="flex flex-col items-center justify-center  bg-white border border-gray-300 rounded-lg m-4 p-4">
-<div className="flex flex-col gap-4 w-full">
-      <h1 className='text-black text-xl font-semiBold'>Tâches 1: Acheter a manger</h1>
-      <h3 className='text-black'> <span className='font-bold text-blue-500'>Description:</span> Acheter des fruits et légumes a Carrefour avec une bonne qualité</h3>
-      </div>
-      <div className="flex gap-2 mt-4 justify-start w-full">
-        <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Modifier</button>
-        <button className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Supprimer</button>
-      </div>
-      </div>
+    <div className="p-6 mx-auto flex flex-col justify-center items-center">
+      {/* Pop-up de rappel */}
+      {reminder && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col gap-4 relative items-center text-center">
+            <h2 className="text-xl font-bold mb-2 text-red-600">Rappel&nbsp;!</h2>
+            <p className="text-lg font-semibold">
+              La tâche suivante arrive à échéance dans moins de 20 minutes&nbsp;:
+            </p>
+            <div className="bg-gray-100 rounded p-3 w-full">
+              <div className="font-bold">{reminder.task.titre}</div>
+              <div className="text-sm text-gray-600">
+                {reminder.task.description}
+              </div>
+              <div className="text-xs mt-2">
+                Échéance : {new Date(reminder.task.dateFin).toLocaleString()}
+              </div>
+            </div>
+            <div className="flex gap-4 mt-4 justify-center">
+              <button
+                className="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600"
+                onClick={handleProlong}
+              >
+                Prolonger de 20 min
+              </button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                onClick={handleOkReminder}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <h1 className="text-4xl font-bold mb-6">Gestion des tâches</h1>
+
+      {/* Modal d'ajout de tâche */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md flex flex-col gap-4 relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-red-500 text-2xl"
+              onClick={() => setShowModal(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-2">Créer une tâche</h2>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+              <input
+                type="text"
+                name="titre"
+                value={form.titre}
+                onChange={handleChange}
+                placeholder="Titre"
+                className="border p-2 rounded"
+                required
+              />
+              <textarea
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                placeholder="Description"
+                className="border p-2 rounded"
+                required
+              />
+              <select
+                name="categorie"
+                value={form.categorie}
+                onChange={handleChange}
+                className="border p-2 rounded"
+                required
+              >
+                <option value="">Catégorie</option>
+                <option value="education">Éducation</option>
+                <option value="sport">Sport</option>
+                <option value="course">Course</option>
+                <option value="autre">Autre</option>
+              </select>
+              <div className="flex gap-2">
+                <input
+                  type="datetime-local"
+                  name="dateDebut"
+                  value={form.dateDebut}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-1/2"
+                  required
+                />
+                <input
+                  type="datetime-local"
+                  name="dateFin"
+                  value={form.dateFin}
+                  onChange={handleChange}
+                  className="border p-2 rounded w-1/2"
+                  required
+                />
+              </div>
+              <select
+                name="statut"
+                value={form.statut}
+                onChange={handleChange}
+                className="border p-2 rounded"
+              >
+                <option value="à faire">À faire</option>
+                <option value="en cours">En cours</option>
+                <option value="terminé">Terminé</option>
+              </select>
+              <button
+                type="submit"
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2"
+              >
+                Ajouter
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+        <div className="grid gap-4">
+          <div className=" flex space-x-10 items-center mb-4">
+            <button
+              className={`px-4 py-2 rounded ${filter === "all" ? "bg-blue-700" : "bg-blue-500"} text-white hover:bg-blue-600`}
+              onClick={() => setFilter("all")}
+            >
+              Toutes
+            </button>
+            <button
+              className={`px-4 py-2 rounded ${filter === "à faire" ? "bg-blue-700" : "bg-blue-500"} text-white hover:bg-blue-600`}
+              onClick={() => setFilter("à faire")}
+            >
+              À faire
+            </button>
+            <button
+              className={`px-4 py-2 rounded ${filter === "en cours" ? "bg-yellow-700" : "bg-yellow-500"} text-white hover:bg-yellow-600`}
+              onClick={() => setFilter("en cours")}
+            >
+              En cours
+            </button>
+            <button
+              className={`px-4 py-2 rounded ${filter === "terminé" ? "bg-green-700" : "bg-green-500"} text-white hover:bg-green-600`}
+              onClick={() => setFilter("terminé")}
+            >
+              Terminé
+            </button>
+            <button
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              onClick={() => setShowModal(true)}
+            >
+              Créer tâche
+            </button>
+          </div>
+          {/* Affichage du message si aucune tâche après filtrage */}
+          {filteredTasks.length === 0 && (
+            <div className="text-center text-gray-500 font-semibold mb-4">
+              {filter === "all" && "Aucune tâche disponible"}
+              {filter === "à faire" && "Aucune tâche à faire"}
+              {filter === "en cours" && "Aucune tâche en cours"}
+              {filter === "terminé" && "Aucune tâche terminée"}
+            </div>
+          )}
+          {filteredTasks.map((task) => (
+            <TodoItem key={task.id} task={task} onDelete={handleDelete} />
+          ))}
+        </div>
     </div>
   );
 }
