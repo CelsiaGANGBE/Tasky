@@ -2,56 +2,70 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import TodoItem from "./components/TodoItem";
 
-function App() {
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      titre: "Acheter à manger",
-      description:
-        "Acheter des fruits et légumes à Carrefour avec une bonne qualité",
-      categorie: "course",
-      dateDebut: "2025-09-10T09:00",
-      dateFin: "2025-09-12T18:00",
-      statut: "à faire",
-    },
-    {
-      id: 2,
-      titre: "Révision examen React",
-      description: "Relire le cours et faire des petits projets pratiques",
-      categorie: "education",
-      dateDebut: "2025-09-11T10:00",
-      dateFin: "2025-09-15T20:00",
-      statut: "en cours",
-    }
-  ]);
+// Fonction utilitaire pour gérer le localStorage
+const getUsersFromStorage = () => {
+  const users = localStorage.getItem("users");
+  return users ? JSON.parse(users) : [];
+};
+const setUsersToStorage = (users) => {
+  localStorage.setItem("users", JSON.stringify(users));
+};
 
+function App() {
+  // Authentification
+  const [currentUser, setCurrentUser] = useState(() => {
+    const user = localStorage.getItem("currentUser");
+    return user ? JSON.parse(user) : null;
+  });
+  const [authForm, setAuthForm] = useState({ email: "", password: "" });
+  const [isRegister, setIsRegister] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  // Tâches de l'utilisateur connecté
+  const [tasks, setTasks] = useState([]);
   const [reminder, setReminder] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({
     titre: "",
     description: "",
     categorie: "",
-    dateDebut: new Date().toISOString().slice(0, 16), // date du jour par défaut au format "YYYY-MM-DDTHH:mm"
+    dateDebut: new Date().toISOString().slice(0, 16),
     dateFin: "",
     statut: "à faire",
   });
   const [editTask, setEditTask] = useState(null);
-
-  // Ajout de l'état pour le filtre
   const [filter, setFilter] = useState("all");
-
   const reminderTimeout = useRef(null);
 
-  // Effet pour gérer les rappels automatiques
+  // Charger les tâches de l'utilisateur connecté
+  useEffect(() => {
+    if (currentUser) {
+      const users = getUsersFromStorage();
+      const user = users.find((u) => u.email === currentUser.email);
+      setTasks(user?.tasks || []);
+    }
+  }, [currentUser]);
+
+  // Sauvegarder les tâches de l'utilisateur connecté
+  useEffect(() => {
+    if (currentUser) {
+      const users = getUsersFromStorage();
+      const idx = users.findIndex((u) => u.email === currentUser.email);
+      if (idx !== -1) {
+        users[idx].tasks = tasks;
+        setUsersToStorage(users);
+      }
+    }
+  }, [tasks, currentUser]);
+
+  // Gestion du rappel
   useEffect(() => {
     if (reminderTimeout.current) clearTimeout(reminderTimeout.current);
     if (reminder) return;
-
     const now = new Date();
     let nextTask = null;
     let nextIndex = -1;
     let minDiff = Infinity;
-
     tasks.forEach((task, idx) => {
       if (!task.dateFin) return;
       const dateFin = new Date(task.dateFin);
@@ -62,20 +76,66 @@ function App() {
         nextIndex = idx;
       }
     });
-
     if (nextTask) {
       reminderTimeout.current = setTimeout(() => {
         setReminder({ task: nextTask, index: nextIndex });
       }, 1000);
     } else {
-      reminderTimeout.current = setTimeout(() => {}, 60000); // recheck dans 1 min
+      reminderTimeout.current = setTimeout(() => {}, 60000);
     }
-
     return () => {
       if (reminderTimeout.current) clearTimeout(reminderTimeout.current);
     };
   }, [tasks, reminder]);
 
+  // Authentification
+  const handleAuthChange = (e) => {
+    setAuthForm({ ...authForm, [e.target.name]: e.target.value });
+  };
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    setAuthError("");
+    const users = getUsersFromStorage();
+    if (users.find((u) => u.email === authForm.email)) {
+      setAuthError("Cet email existe déjà.");
+      return;
+    }
+    const newUser = {
+      email: authForm.email,
+      password: authForm.password,
+      tasks: [],
+    };
+    users.push(newUser);
+    setUsersToStorage(users);
+    setCurrentUser({ email: newUser.email });
+    localStorage.setItem("currentUser", JSON.stringify({ email: newUser.email }));
+    setAuthForm({ email: "", password: "" });
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setAuthError("");
+    const users = getUsersFromStorage();
+    const user = users.find(
+      (u) => u.email === authForm.email && u.password === authForm.password
+    );
+    if (!user) {
+      setAuthError("Email ou mot de passe incorrect.");
+      return;
+    }
+    setCurrentUser({ email: user.email });
+    localStorage.setItem("currentUser", JSON.stringify({ email: user.email }));
+    setAuthForm({ email: "", password: "" });
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem("currentUser");
+    setTasks([]);
+  };
+
+  // Gestion des tâches
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -132,45 +192,116 @@ function App() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  // Fonction pour mettre à jour le statut d'une tâche
   const onUpdateStatus = (id, newStatus) => {
-    setTasks(tasks =>
-      tasks.map(task =>
+    setTasks((tasks) =>
+      tasks.map((task) =>
         task.id === id ? { ...task, statut: newStatus } : task
       )
     );
   };
 
-  // Fonction pour ouvrir la modale d'édition avec les données de la tâche
   const handleEdit = (task) => {
     setEditTask(task);
-    setShowModal(false); // ferme la modale de création si ouverte
+    setShowModal(false);
   };
 
-  // Fonction pour gérer la soumission de la modale d'édition
   const handleUpdate = (e) => {
     e.preventDefault();
-    setTasks(tasks =>
-      tasks.map(t =>
-        t.id === editTask.id ? { ...editTask } : t
-      )
+    setTasks((tasks) =>
+      tasks.map((t) => (t.id === editTask.id ? { ...editTask } : t))
     );
     setEditTask(null);
   };
 
-  // Fonction pour gérer les changements dans la modale d'édition
   const handleEditChange = (e) => {
     setEditTask({ ...editTask, [e.target.name]: e.target.value });
   };
 
-  // Méthode de filtrage
   const filteredTasks =
     filter === "all"
       ? tasks
       : tasks.filter((task) => task.statut === filter);
 
+  // Interface d'authentification
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
+        <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm">
+          <h2 className="text-2xl font-bold mb-4 text-center">
+            {isRegister ? "Créer un compte" : "Connexion"}
+          </h2>
+          <form
+            onSubmit={isRegister ? handleRegister : handleLogin}
+            className="flex flex-col gap-4"
+          >
+            <input
+              type="email"
+              name="email"
+              value={authForm.email}
+              onChange={handleAuthChange}
+              placeholder="Email"
+              className="border p-2 rounded"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              value={authForm.password}
+              onChange={handleAuthChange}
+              placeholder="Mot de passe"
+              className="border p-2 rounded"
+              required
+            />
+            {authError && (
+              <div className="text-red-500 text-sm">{authError}</div>
+            )}
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            >
+              {isRegister ? "Créer mon compte" : "Se connecter"}
+            </button>
+          </form>
+          <div className="mt-4 text-center">
+            {isRegister ? (
+              <span>
+                Déjà un compte ?{" "}
+                <button
+                  className="text-blue-600 underline"
+                  onClick={() => setIsRegister(false)}
+                >
+                  Se connecter
+                </button>
+              </span>
+            ) : (
+              <span>
+                Pas de compte ?{" "}
+                <button
+                  className="text-blue-600 underline"
+                  onClick={() => setIsRegister(true)}
+                >
+                  Créer un compte
+                </button>
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Interface principale (tâches)
   return (
     <div className="p-6 mx-auto flex flex-col justify-center items-center">
+      <div className="w-full flex justify-end mb-4">
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          onClick={handleLogout}
+        >
+          Déconnexion
+        </button>
+      </div>
+
       {/* Pop-up de rappel */}
       {reminder && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -373,25 +504,33 @@ function App() {
       <div className="grid gap-4">
         <div className=" flex space-x-10 items-center mb-4">
           <button
-            className={`px-4 py-2 rounded ${filter === "all" ? "bg-blue-700" : "bg-blue-500"} text-white hover:bg-blue-600`}
+            className={`px-4 py-2 rounded ${
+              filter === "all" ? "bg-blue-700" : "bg-blue-500"
+            } text-white hover:bg-blue-600`}
             onClick={() => setFilter("all")}
           >
             Toutes
           </button>
           <button
-            className={`px-4 py-2 rounded ${filter === "à faire" ? "bg-blue-700" : "bg-blue-500"} text-white hover:bg-blue-600`}
+            className={`px-4 py-2 rounded ${
+              filter === "à faire" ? "bg-blue-700" : "bg-blue-500"
+            } text-white hover:bg-blue-600`}
             onClick={() => setFilter("à faire")}
           >
             À faire
           </button>
           <button
-            className={`px-4 py-2 rounded ${filter === "en cours" ? "bg-yellow-700" : "bg-yellow-500"} text-white hover:bg-yellow-600`}
+            className={`px-4 py-2 rounded ${
+              filter === "en cours" ? "bg-yellow-700" : "bg-yellow-500"
+            } text-white hover:bg-yellow-600`}
             onClick={() => setFilter("en cours")}
           >
             En cours
           </button>
           <button
-            className={`px-4 py-2 rounded ${filter === "terminé" ? "bg-green-700" : "bg-green-500"} text-white hover:bg-green-600`}
+            className={`px-4 py-2 rounded ${
+              filter === "terminé" ? "bg-green-700" : "bg-green-500"
+            } text-white hover:bg-green-600`}
             onClick={() => setFilter("terminé")}
           >
             Terminé
@@ -425,7 +564,5 @@ function App() {
     </div>
   );
 }
-
-
 
 export default App;
