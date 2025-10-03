@@ -22,16 +22,7 @@ function App() {
       dateDebut: "2025-09-11T10:00",
       dateFin: "2025-09-15T20:00",
       statut: "en cours",
-    },
-    {
-      id: 3,
-      titre: "Tester le rappel",
-      description: "Cette tâche doit déclencher un rappel rapidement",
-      categorie: "test",
-      dateDebut: new Date().toISOString(),
-      dateFin: new Date(Date.now() + 60 * 1000).toISOString(), // échéance dans 1 min
-      statut: "à faire",
-    },
+    }
   ]);
 
   const [reminder, setReminder] = useState(null);
@@ -40,7 +31,7 @@ function App() {
     titre: "",
     description: "",
     categorie: "",
-    dateDebut: "",
+    dateDebut: new Date().toISOString().slice(0, 16), // date du jour par défaut au format "YYYY-MM-DDTHH:mm"
     dateFin: "",
     statut: "à faire",
   });
@@ -110,7 +101,7 @@ function App() {
       titre: "",
       description: "",
       categorie: "",
-      dateDebut: "",
+      dateDebut: new Date().toISOString().slice(0, 16),
       dateFin: "",
       statut: "à faire",
     });

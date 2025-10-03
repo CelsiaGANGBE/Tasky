@@ -1,26 +1,23 @@
-import React from "react";
+import React from 'react';
 
-function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
-  // Définir la couleur du border-l selon la catégorie
+function TodoItem({ task, onDelete, onEdit }) {
+  // Définir la couleur du border-r selon la catégorie
   const categoryBorder =
     task.categorie === "education"
       ? "border-l-4 border-blue-500"
       : task.categorie === "course"
       ? "border-l-4 border-green-500"
-      : task.categorie === "sport"
-      ? "border-l-4 border-white"
-      : "border-l-4 border-gray-200"; // par défaut
+      : "border-l-4 border-gray-200"; // par défaut blanc/gris clair
 
   return (
     <div
-      className={`flex flex-col bg-white ${categoryBorder} border border-gray-300 rounded-lg p-4 shadow-sm mb-2`}
+      className={`flex flex-col bg-white rounded-lg p-4 shadow-md mb-3 transition hover:shadow-lg ${categoryBorder}`}
     >
-      <h2 className="text-xl font-semibold">{task.titre}</h2>
-      <p>
-        <span className="font-bold text-blue-500">Description:</span>{" "}
-        {task.description}
+      <h2 className="text-xl font-semibold text-gray-800">{task.titre}</h2>
+      <p className="text-gray-700 mt-1">
+        <span className="font-bold text-blue-500">Description:</span> {task.description}
       </p>
-      <p>
+      <p className="text-gray-700">
         <span className="font-bold">Catégorie:</span>{" "}
         <span
           className={
@@ -28,8 +25,6 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
               ? "text-blue-500 font-semibold"
               : task.categorie === "course"
               ? "text-green-600 font-semibold"
-              : task.categorie === "sport"
-              ? "text-gray-800 font-semibold"
               : "text-gray-600"
           }
         >
@@ -48,7 +43,7 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
         <span className="font-bold">Statut:</span> {task.statut}
       </p>
       <div className="flex gap-2 mt-4">
-        <button
+            <button
           className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow"
           onClick={() => onEdit(task)}
         >
