@@ -1,8 +1,20 @@
 import React from "react";
 
 function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
+  // Définir la couleur du border-l selon la catégorie
+  const categoryBorder =
+    task.categorie === "education"
+      ? "border-l-4 border-blue-500"
+      : task.categorie === "course"
+      ? "border-l-4 border-green-500"
+      : task.categorie === "sport"
+      ? "border-l-4 border-white"
+      : "border-l-4 border-gray-200"; // par défaut
+
   return (
-    <div className="flex flex-col bg-white border border-gray-300 rounded-lg p-4 shadow-sm mb-2">
+    <div
+      className={`flex flex-col bg-white ${categoryBorder} border border-gray-300 rounded-lg p-4 shadow-sm mb-2`}
+    >
       <h2 className="text-xl font-semibold">{task.titre}</h2>
       <p>
         <span className="font-bold text-blue-500">Description:</span>{" "}
@@ -13,41 +25,38 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
         <span
           className={
             task.categorie === "education"
-              ? "text-blue-500"
-              : "text-green-500"
+              ? "text-blue-500 font-semibold"
+              : task.categorie === "course"
+              ? "text-green-600 font-semibold"
+              : task.categorie === "sport"
+              ? "text-gray-800 font-semibold"
+              : "text-gray-600"
           }
         >
           {task.categorie}
         </span>
       </p>
-      <p>
-        <span className="font-bold">Début:</span> {task.dateDebut}
+      <p className="text-gray-700">
+        <span className="font-bold">Début:</span>{" "}
+        {new Date(task.dateDebut).toLocaleString()}
       </p>
-      <p>
-        <span className="font-bold">Fin:</span> {task.dateFin}
+      <p className="text-gray-700">
+        <span className="font-bold">Fin:</span>{" "}
+        {new Date(task.dateFin).toLocaleString()}
       </p>
-      <p>
-        <span className="font-bold">Statut:</span>{" "}
-        <select
-          value={task.statut}
-          onChange={(e) => onUpdateStatus(task.id, e.target.value)}
-          className="border p-1 rounded"
-        >
-          <option value="à faire">À faire</option>
-          <option value="en cours">En cours</option>
-          <option value="terminé">Terminé</option>
-        </select>
+      <p className="text-gray-700">
+        <span className="font-bold">Statut:</span> {task.statut}
       </p>
       <div className="flex gap-2 mt-4">
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 shadow"
           onClick={() => onEdit(task)}
         >
           Modifier
         </button>
         <button
           onClick={() => onDelete(task.id)}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 shadow"
         >
           Supprimer
         </button>
