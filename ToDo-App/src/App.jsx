@@ -77,7 +77,8 @@ function App() {
     let nextIndex = -1;
     let minDiff = Infinity;
     tasks.forEach((task, idx) => {
-      if (!task.dateFin) return;
+      // Exclure les tâches terminées et celles sans date de fin
+      if (!task.dateFin || task.statut === "terminé") return;
       const dateFin = new Date(task.dateFin);
       const diff = dateFin - now;
       if (diff > 0 && diff <= 20 * 60 * 1000 && diff < minDiff) {
@@ -211,6 +212,10 @@ function App() {
   };
 
   const handleEdit = (task) => {
+    // Empêcher la modification d'une tâche terminée
+    if (task.statut === "terminé") {
+      return;
+    }
     setEditTask(task);
     setShowModal(false);
   };
@@ -235,7 +240,7 @@ function App() {
   // Interface d'authentification
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex flex-col w-full justify-center items-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4">
+      <div className="min-h-screen w-screen flex flex-col justify-center items-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4">
         <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-slideIn">
           <div className="text-center mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
@@ -323,7 +328,7 @@ function App() {
 
   // Interface principale (tâches)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
       {/* Header moderne */}
       <div className="bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -709,6 +714,7 @@ function App() {
             )}
           </div>
         )}
+         <ul className="todo-list w-full flex flex-row justify-center items-center gap-4">
         {filteredTasks.map((task) => (
           <TodoItem
             key={task.id}
@@ -718,6 +724,7 @@ function App() {
             onEdit={handleEdit}
           />
         ))}
+        </ul>
       </div>
       </div>
     </div>
