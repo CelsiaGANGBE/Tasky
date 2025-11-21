@@ -11,6 +11,23 @@ const setUsersToStorage = (users) => {
   localStorage.setItem("users", JSON.stringify(users));
 };
 
+
+const calculatePoints = (task) => {
+  if (!task.dateFin) return 0;
+
+  const now = new Date();
+  const endDate = new Date(task.dateFin);
+  const diffDays = Math.ceil((endDate - now) / (1000 * 60 * 60 * 24));
+
+  if (diffDays >= 4) return 5;
+  if (diffDays === 4) return 4;
+  if (diffDays === 3) return 3;
+  if (diffDays === 2) return 2;
+  if (diffDays === 1) return 1;
+  return 0;
+};
+
+
 function App() {
   // Authentification
   const [currentUser, setCurrentUser] = useState(() => {
@@ -57,6 +74,10 @@ function App() {
       }
     }
   }, [tasks, currentUser]);
+
+  //compteur
+  const [loyaltyPoints, setLoyaltyPoints] = useState(0);
+  const [reward, setReward] = useState(false);
 
   // Gestion du rappel
   useEffect(() => {
@@ -192,13 +213,33 @@ function App() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
+  // const onUpdateStatus = (id, newStatus) => {
+  //   setTasks((tasks) =>
+  //     tasks.map((task) =>
+  //       task.id === id ? { ...task, statut: newStatus } : task
+  //     )
+  //   );
+  // };
   const onUpdateStatus = (id, newStatus) => {
-    setTasks((tasks) =>
-      tasks.map((task) =>
-        task.id === id ? { ...task, statut: newStatus } : task
-      )
-    );
-  };
+  setTasks((tasks) =>
+    tasks.map((task) => {
+      if (task.id === id) {
+        // Si la tâche passe à "terminé" et n'était pas terminée avant
+        if (newStatus === "terminé" && task.statut !== "terminé") {
+          const points = calculatePoints(task);
+          setLoyaltyPoints((prev) => {
+            const total = prev + points;
+            if (total >= 20) setReward(true); // Déclenche le cadeau
+            return total;
+          });
+        }
+        return { ...task, statut: newStatus };
+      }
+      return task;
+    })
+  );
+};
+
 
   const handleEdit = (task) => {
     setEditTask(task);
@@ -411,6 +452,8 @@ function App() {
                 </svg>
               </div>
               <h2 className="text-2xl font-bold text-gray-800">Créer une tâche</h2>
+              
+
             </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div>
@@ -662,6 +705,12 @@ function App() {
               </svg>
               Créer une tâche
             </button>
+            {loyaltyPoints > 0 && (
+              <div className="mt-2 px-4 py-2 bg-yellow-100 rounded-xl inline-block font-semibold text-yellow-800">
+                🏆 Points de fidélité : {loyaltyPoints} / 20
+                {reward && " 🎁 Vous avez gagné un cadeau !"}
+              </div>
+            )}
           </div>
         </div>
 
