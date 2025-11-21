@@ -58,6 +58,16 @@ function App() {
     }
   }, [tasks, currentUser]);
 
+  // Mettre à jour la date de début à la date/heure actuelle quand le modal s'ouvre
+  useEffect(() => {
+    if (showModal && !editTask) {
+      setForm(prevForm => ({
+        ...prevForm,
+        dateDebut: new Date().toISOString().slice(0, 16)
+      }));
+    }
+  }, [showModal, editTask]);
+
   // Gestion du rappel
   useEffect(() => {
     if (reminderTimeout.current) clearTimeout(reminderTimeout.current);
@@ -67,7 +77,8 @@ function App() {
     let nextIndex = -1;
     let minDiff = Infinity;
     tasks.forEach((task, idx) => {
-      if (!task.dateFin) return;
+      // Exclure les tâches terminées et celles sans date de fin
+      if (!task.dateFin || task.statut === "terminé") return;
       const dateFin = new Date(task.dateFin);
       const diff = dateFin - now;
       if (diff > 0 && diff <= 20 * 60 * 1000 && diff < minDiff) {
@@ -201,6 +212,10 @@ function App() {
   };
 
   const handleEdit = (task) => {
+    // Empêcher la modification d'une tâche terminée
+    if (task.statut === "terminé") {
+      return;
+    }
     setEditTask(task);
     setShowModal(false);
   };
@@ -225,10 +240,10 @@ function App() {
   // Interface d'authentification
   if (!currentUser) {
     return (
-      <div className="min-h-screen flex flex-col w-full justify-center items-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4">
+      <div className="min-h-screen w-screen flex flex-col justify-center items-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 p-4">
         <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md animate-slideIn">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br w-full from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -313,7 +328,7 @@ function App() {
 
   // Interface principale (tâches)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen w-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-100">
       {/* Header moderne */}
       <div className="bg-white shadow-lg border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -384,7 +399,7 @@ function App() {
                 Prolonger de 20 min
               </button>
               <button
-                className="flex-1 bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700 transform hover:scale-105 font-semibold shadow-md transition-all"
+                className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3 rounded-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 font-semibold shadow-md transition-all"
                 onClick={handleOkReminder}
               >
                 OK
@@ -460,10 +475,11 @@ function App() {
                     type="datetime-local"
                     name="dateDebut"
                     value={form.dateDebut}
-                    onChange={handleChange}
-                    className="w-full border-2 border-gray-200 p-2 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                    readOnly
+                    className="w-full border-2 border-gray-200 p-2 rounded-lg bg-gray-50 cursor-not-allowed outline-none transition-all"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Date et heure actuelles (automatique)</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Fin *</label>
@@ -567,10 +583,11 @@ function App() {
                     type="datetime-local"
                     name="dateDebut"
                     value={editTask.dateDebut}
-                    onChange={handleEditChange}
-                    className="w-full border-2 border-gray-200 p-2 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all"
+                    readOnly
+                    className="w-full border-2 border-gray-200 p-2 rounded-lg bg-gray-50 cursor-not-allowed outline-none transition-all"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Date de début (non modifiable)</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Fin *</label>
@@ -613,7 +630,7 @@ function App() {
           <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
             <div className="flex flex-wrap gap-2">
               <button
-                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "all"
                     ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -623,7 +640,7 @@ function App() {
                 📋 Toutes ({tasks.length})
               </button>
               <button
-                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "à faire"
                     ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                     : "bg-blue-50 text-blue-700 hover:bg-blue-100"
@@ -633,7 +650,7 @@ function App() {
                 ⏳ À faire ({tasks.filter(t => t.statut === "à faire").length})
               </button>
               <button
-                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "en cours"
                     ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg"
                     : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
@@ -643,7 +660,7 @@ function App() {
                 🔄 En cours ({tasks.filter(t => t.statut === "en cours").length})
               </button>
               <button
-                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "terminé"
                     ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg"
                     : "bg-green-50 text-green-700 hover:bg-green-100"
@@ -708,6 +725,7 @@ function App() {
               onEdit={handleEdit}
             />
         ))}
+        </ul>
       </div>
       </div>
     </div>
