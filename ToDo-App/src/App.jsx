@@ -166,6 +166,7 @@ function App() {
       {
         ...form,
         id: Date.now(),
+        notified: false,
       },
     ]);
     setForm({
@@ -181,17 +182,31 @@ function App() {
 
   const handleProlong = () => {
     if (!reminder) return;
-    setTasks((tasks) =>
+
+    setTasks(tasks =>
       tasks.map((t, i) =>
-        i === reminder.index ? { ...t, dateFin: getNewDateFin(t.dateFin, 20) } : t
+        i === reminder.index
+          ? { ...t, dateFin: getNewDateFin(t.dateFin, 20), notified: true }
+          : t
       )
     );
+
     setReminder(null);
   };
 
+
   const handleOkReminder = () => {
+    if (!reminder) return;
+
+    setTasks(tasks =>
+      tasks.map((t, i) =>
+        i === reminder.index ? { ...t, notified: true } : t
+      )
+    );
+
     setReminder(null);
   };
+
 
   const getNewDateFin = (dateFin, minutes) => {
     const d = new Date(dateFin);
