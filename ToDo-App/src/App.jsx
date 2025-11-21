@@ -714,15 +714,16 @@ function App() {
             )}
           </div>
         )}
-         <ul className="todo-list w-full flex flex-row justify-center items-center gap-4">
-        {filteredTasks.map((task) => (
-          <TodoItem
-            key={task.id}
-            task={task}
-            onDelete={handleDelete}
-            onUpdateStatus={onUpdateStatus}
-            onEdit={handleEdit}
-          />
+        {[...filteredTasks]
+          .sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut))
+          .map((task) => (
+            <TodoItem
+              key={task.id}
+              task={task}
+              onDelete={handleDelete}
+              onUpdateStatus={onUpdateStatus}
+              onEdit={handleEdit}
+            />
         ))}
         </ul>
       </div>
