@@ -107,10 +107,11 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
             <select
               value={task.statut}
               onChange={(e) => onUpdateStatus(task.id, e.target.value)}
+              
               className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-semibold border-2 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 ${statusInfo.bg} ${statusInfo.text} ${statusInfo.border}`}
             >
-              <option value="à faire">⏳ À faire</option>
-              <option value="en cours">🔄 En cours</option>
+              <option value="à faire" disabled={task.statut !== "à faire"} >⏳ À faire</option>
+              <option value="en cours" disabled={task.statut === "terminé"} >🔄 En cours</option>
               <option value="terminé">✅ Terminé</option>
             </select>
           </div>
