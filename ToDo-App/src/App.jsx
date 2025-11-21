@@ -697,14 +697,16 @@ function App() {
             )}
           </div>
         )}
-        {filteredTasks.map((task) => (
-          <TodoItem
-            key={task.id}
-            task={task}
-            onDelete={handleDelete}
-            onUpdateStatus={onUpdateStatus}
-            onEdit={handleEdit}
-          />
+        {[...filteredTasks]
+          .sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut))
+          .map((task) => (
+            <TodoItem
+              key={task.id}
+              task={task}
+              onDelete={handleDelete}
+              onUpdateStatus={onUpdateStatus}
+              onEdit={handleEdit}
+            />
         ))}
       </div>
       </div>
