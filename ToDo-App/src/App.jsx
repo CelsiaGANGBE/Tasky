@@ -238,8 +238,18 @@ function App() {
   const handleUpdate = (e) => {
     e.preventDefault();
     setTasks((tasks) =>
-      tasks.map((t) => (t.id === editTask.id ? { ...editTask } : t))
+      tasks.map((t) => {
+        if (t.id !== editTask.id) return t;
+
+        const dateChanged = t.dateFin !== editTask.dateFin;
+
+        return {
+          ...editTask,
+          notified: dateChanged ? false : t.notified, // 🔥 IMPORTANT
+        };
+      })
     );
+
     setEditTask(null);
   };
 
