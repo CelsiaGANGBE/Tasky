@@ -245,7 +245,7 @@ function App() {
 
         return {
           ...editTask,
-          notified: dateChanged ? false : t.notified, // 🔥 IMPORTANT
+          notified: dateChanged ? false : t.notified,
         };
       })
     );
