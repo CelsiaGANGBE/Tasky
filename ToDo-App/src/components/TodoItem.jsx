@@ -78,10 +78,24 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
 
   // Vérifier si la tâche est en retard
   const isOverdue = new Date(task.dateFin) < new Date() && task.statut !== "terminé";
+  // Définir la couleur du border-l selon la catégorie
+  
+  const handleStatusChange = (e) => {
+    onUpdateStatus(task.id, e.target.value);
+  };
+  
+  const categoryBorder =
+    task.categorie === "education"
+      ? "border-l-4 border-blue-500"
+      : task.categorie === "course"
+      ? "border-l-4 border-green-500"
+      : task.categorie === "sport"
+      ? "border-l-4 border-white"
+      : "border-l-4 border-gray-200"; // par défaut
 
   return (
     <div
-      className={`bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] border-l-4 ${categoryInfo.border} ${
+      className={`bg-white w-1/2 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] border-l-4 ${categoryInfo.border} ${
         isOverdue ? "ring-2 ring-red-300" : ""
       }`}
     >
@@ -163,15 +177,28 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
 
       {/* Actions */}
       <div className="flex gap-2 pt-4 border-t border-gray-200">
-        <button
-          className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 font-semibold shadow-md hover:shadow-lg transition-all duration-200"
-          onClick={() => onEdit(task)}
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-          </svg>
-          Modifier
-        </button>
+        {task.statut !== "terminé" ? (
+          <button
+            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2.5 rounded-lg hover:from-indigo-700 hover:to-purple-700 transform hover:scale-105 font-semibold shadow-md hover:shadow-lg transition-all duration-200"
+            onClick={() => onEdit(task)}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Modifier
+          </button>
+        ) : (
+          <button
+            className="flex-1 flex items-center justify-center gap-2 bg-gray-400 text-white px-4 py-2.5 rounded-lg cursor-not-allowed font-semibold shadow-md opacity-60"
+            disabled
+            title="Les tâches terminées ne peuvent pas être modifiées"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Modifier (désactivé)
+          </button>
+        )}
         <button
           onClick={() => onDelete(task.id)}
           className="flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-2.5 rounded-lg hover:bg-red-600 transform hover:scale-105 font-semibold shadow-md hover:shadow-lg transition-all duration-200"
