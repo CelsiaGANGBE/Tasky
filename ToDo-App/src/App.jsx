@@ -714,6 +714,7 @@ function App() {
             )}
           </div>
         )}
+        <ul className="flex flex-row items-center gap-4">
         {[...filteredTasks]
           .sort((a, b) => new Date(b.dateDebut) - new Date(a.dateDebut))
           .map((task) => (
