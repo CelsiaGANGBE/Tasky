@@ -740,7 +740,7 @@ function App() {
               onEdit={handleEdit}
             />
         ))}
-        </ul>
+        
       </div>
       </div>
     </div>
