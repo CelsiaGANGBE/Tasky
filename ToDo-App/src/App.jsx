@@ -78,7 +78,7 @@ function App() {
     let minDiff = Infinity;
     tasks.forEach((task, idx) => {
       // Exclure les tâches terminées et celles sans date de fin
-      if (!task.dateFin || task.statut === "terminé") return;
+      if (!task.dateFin || task.statut === "terminé" || task.notified) return;
       const dateFin = new Date(task.dateFin);
       const diff = dateFin - now;
       if (diff > 0 && diff <= 20 * 60 * 1000 && diff < minDiff) {
@@ -239,8 +239,18 @@ function App() {
   const handleUpdate = (e) => {
     e.preventDefault();
     setTasks((tasks) =>
-      tasks.map((t) => (t.id === editTask.id ? { ...editTask } : t))
+      tasks.map((t) => {
+        if (t.id !== editTask.id) return t;
+
+        const dateChanged = t.dateFin !== editTask.dateFin;
+
+        return {
+          ...editTask,
+          notified: dateChanged ? false : t.notified,
+        };
+      })
     );
+
     setEditTask(null);
   };
 
@@ -648,7 +658,7 @@ function App() {
           <div className="flex flex-wrap gap-3 items-center justify-between mb-4">
             <div className="flex flex-wrap gap-2">
               <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "all"
                     ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -658,7 +668,7 @@ function App() {
                 📋 Toutes ({tasks.length})
               </button>
               <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "à faire"
                     ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
                     : "bg-blue-50 text-blue-700 hover:bg-blue-100"
@@ -668,7 +678,7 @@ function App() {
                 ⏳ À faire ({tasks.filter(t => t.statut === "à faire").length})
               </button>
               <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "en cours"
                     ? "bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg"
                     : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
@@ -678,7 +688,7 @@ function App() {
                 🔄 En cours ({tasks.filter(t => t.statut === "en cours").length})
               </button>
               <button
-                    className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
+                className={`px-4 py-2 rounded-lg font-semibold transition-all transform hover:scale-105 shadow-md ${
                   filter === "terminé"
                     ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg"
                     : "bg-green-50 text-green-700 hover:bg-green-100"
@@ -744,7 +754,6 @@ function App() {
               onEdit={handleEdit}
             />
         ))}
-        </ul>
       </div>
       </div>
     </div>
