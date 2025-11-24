@@ -167,6 +167,7 @@ function App() {
         ...form,
         id: Date.now(),
         notified: false,
+        statut: 'à faire',
       },
     ]);
     setForm({
@@ -527,6 +528,8 @@ function App() {
               >
                 ✨ Ajouter la tâche
               </button>
+              {/* PLUS DE CHAMP STATUT ICI */}
+              <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2">Ajouter</button>
             </form>
           </div>
         </div>

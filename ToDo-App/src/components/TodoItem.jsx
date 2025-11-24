@@ -78,6 +78,20 @@ function TodoItem({ task, onDelete, onEdit, onUpdateStatus }) {
 
   // Vérifier si la tâche est en retard
   const isOverdue = new Date(task.dateFin) < new Date() && task.statut !== "terminé";
+  // Définir la couleur du border-l selon la catégorie
+  
+  const handleStatusChange = (e) => {
+    onUpdateStatus(task.id, e.target.value);
+  };
+  
+  const categoryBorder =
+    task.categorie === "education"
+      ? "border-l-4 border-blue-500"
+      : task.categorie === "course"
+      ? "border-l-4 border-green-500"
+      : task.categorie === "sport"
+      ? "border-l-4 border-white"
+      : "border-l-4 border-gray-200"; // par défaut
 
   return (
     <div
