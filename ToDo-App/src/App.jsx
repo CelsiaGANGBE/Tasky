@@ -11,7 +11,7 @@ const setUsersToStorage = (users) => {
   localStorage.setItem("users", JSON.stringify(users));
 };
 
-
+//juste pour permettre le merge
 const calculatePoints = (task) => {
   if (!task.dateFin) return 0;
 
